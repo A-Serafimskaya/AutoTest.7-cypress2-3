@@ -1,102 +1,76 @@
 describe("user API tests", () => {
+
   it("should create user", () => {
-    cy.request({
-      method: "POST",
-      url: "http://localhost:8080/users",
-      body: {
-        firstName: "Egor",
-        surName: "Creed",
-      },
-    }).then((response) => {
-      cy.log(JSON.stringify(response.body));
+    const userData = {
+      firstName: "Alice",
+      surName: "Smith",
+    };
+    cy.createUser(userData).then((response) => {
       expect(response.status).to.eq(200);
-      expect(response.body.firstName).to.eq("Egor");
-      expect(response.body.surName).to.eq("Creed");
+      expect(response.body.firstName).to.eq("Alice");
+      expect(response.body.surName).to.eq("Smith");
     });
   });
 
   it("should get a user by ID", () => {
-    cy.request({
-      method: "POST",
-      url: "http://localhost:8080/users",
-      body: {
-        firstName: "Egor",
-        surName: "Creed",
-      },
-    }).then((response) => {
+    const userData = {
+      firstName: "Alice",
+      surName: "Smith",
+    };
+    cy.createUser(userData).then((response) => {
       const userId = response.body.id;
-      cy.request({
-        method: "GET",
-        url: `http://localhost:8080/users/${userId}`,
-      }).then((response) => {
+
+      cy.getUserById(userId).then((response) => {
         cy.log(JSON.stringify(response.body));
         expect(response.status).to.eq(200);
 
         expect(response.body.id).to.eq(userId);
-        expect(response.body.firstName).to.eq("Egor");
-        expect(response.body.surName).to.eq("Creed");
+        expect(response.body.firstName).to.eq("Alice");
+        expect(response.body.surName).to.eq("Smith");
       });
     });
   });
 
-  it("should update an existing user (PUT /users/:id)", () => {
-    cy.request({
-      method: "POST",
-      url: "http://localhost:8080/users",
-      body: {
-        firstName: "Egor",
-        surName: "Creed",
-      },
-    }).then((response) => {
+  it("should update an existing user", () => {
+    const userData = {
+      firstName: "Alice",
+      surName: "Smith",
+    };
+    cy.createUser(userData).then((response) => {
       const userId = response.body.id;
-      cy.request({
-        method: "PUT",
-        url: `http://localhost:8080/users/${userId}`,
-        body: {
-          firstName: "Egor",
-          surName: "Ivanov",
-        },
-      }).then((response) => {
-        cy.log("PUT status: " + response.status);
-        cy.log("PUT body: " + JSON.stringify(response.body));
-        cy.request({
-          method: "GET",
-          url: `http://localhost:8080/users/${userId}`,
-        }).then((response) => {
+      const updatedData = {
+        firstName: "Alice",
+        surName: "Smoth",
+      };
+
+      cy.updateUser(userId, updatedData).then((response) => {
+        cy.getUserById(userId).then((response) => {
           cy.log(JSON.stringify(response.body));
           expect(response.status).to.eq(200);
 
           expect(response.body.id).to.eq(userId);
-          expect(response.body.firstName).to.eq("Egor");
-          expect(response.body.surName).to.eq("Ivanov");
+          expect(response.body.firstName).to.eq("Alice");
+          expect(response.body.surName).to.eq("Smoth");
         });
       });
     });
   });
 
-  it("should delete a user (DELETE /users/:id)", () => {
-    cy.request({
-      method: "POST",
-      url: "http://localhost:8080/users",
-      body: {
-        id: 0,
-        firstName: "ToBeDeleted",
-        surName: "User",
-      },
-    }).then((response) => {
+  it("should delete a user", () => {
+    const userData = {
+      firstName: "Alice",
+      surName: "Smeth",
+    };
+    cy.createUser(userData).then((response) => {
+      expect(response.status).to.eq(200);
+      expect(response.body.firstName).to.eq("Alice");
+      expect(response.body.surName).to.eq("Smeth");
       const userId = response.body.id;
 
-      cy.request({
-        method: "DELETE",
-        url: `http://localhost:8080/users/${userId}`,
-      }).then((response) => {
+      cy.deleteUser(userId).then((response) => {
         expect(response.status).to.eq(200);
-
-        cy.request({
-          method: "GET",
-          url: `http://localhost:8080/users/${userId}`,
-          failOnStatusCode: false,
-        }).then((response) => {
+        cy.log("Пользователь удалён успешно");
+        cy.getUserById(userId).then((response) => {
           expect(response.status).to.eq(400);
         });
       });
